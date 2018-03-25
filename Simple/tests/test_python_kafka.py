@@ -1,11 +1,10 @@
 from unittest import TestCase
 
-from kafka import KafkaConsumer
-import msgpack
 import json
 
 '''
-Before test:
+Create topic before test:
+
 $ /apps/kafka/default/bin/kafka-topics.sh \
     --zookeeper zookeeper01:2181 \
     --create --topic test-topic \
@@ -15,16 +14,53 @@ $ /apps/kafka/default/bin/kafka-topics.sh \
 $ /apps/kafka/default/bin/kafka-topics.sh \
     --zookeeper zookeeper01:2181 \
     --list
+
+Command line producer to publish message:
+$ /apps/kafka/default/bin/kafka-console-producer.sh \
+    --broker-list kafka01:9092 \
+    --topic test-topic
 '''
+
 class TestPythonKafka(TestCase):
+    def test_confluent_consumer(self):
+        '''
+        # yum install librdkafka-devel
+        # pip install confluent_kafka
+        '''
+        from confluent_kafka import Consumer, KafkaError
+
+        consumer = Consumer({
+            'bootstrap.servers': 'localhost:9092',
+            'group.id': 'test-group',
+            'default.topic.config': {
+                'auto.offset.reset': 'smallest'
+            }
+        })
+        consumer.subscribe(['test-topic'])
+
+        while True:
+            msg = consumer.poll()
+
+            if msg.error():
+                if msg.error().code() == KafkaError._PARTITION_EOF:
+                    continue
+                else:
+                    print(msg.error())
+                    break
+
+            print('Received message: {}'.format(msg.value().decode('utf-8')))
+
+        consumer.close()
+
+
     def test_consumer(self):
         '''
-        Command line producer to publish message:
-        $ /apps/kafka/default/bin/kafka-console-producer.sh \
-            --broker-list kafka01:9092 \
-            --topic test-topic
+        # pip install kafka-python, msgpack-python
         '''
         # To consume latest messages and auto-commit offsets
+        from kafka import KafkaConsumer
+        import msgpack
+
         consumer = KafkaConsumer('test-topic',
                                 group_id='test-group',
                                 bootstrap_servers=['localhost:9092'],
