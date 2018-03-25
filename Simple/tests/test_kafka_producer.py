@@ -2,6 +2,9 @@ from unittest import TestCase
 
 class TestKafkaProducer(TestCase):
     def test_simple_producer(self):
+        '''
+        https://github.com/dpkp/kafka-python
+        '''
         from kafka import KafkaProducer
         producer = KafkaProducer(bootstrap_servers='localhost:9092')
 
@@ -13,6 +16,9 @@ class TestKafkaProducer(TestCase):
     
 
     def test_confluent_producer(self):
+        '''
+        https://github.com/confluentinc/confluent-kafka-python/blob/master/README.md
+        '''
         from confluent_kafka import Producer
 
         producer = Producer({'bootstrap.servers': 'localhost:9092'})
