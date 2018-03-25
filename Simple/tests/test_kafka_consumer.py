@@ -23,6 +23,10 @@ $ /apps/kafka/default/bin/kafka-console-producer.sh \
 
 class TestPythonKafka(TestCase):
     def test_confluent_consumer(self):
+        self.__create_conflient_consumer(1, lambda id, msg: print("Consumer %d: Received message: %s" % (id, msg.value().decode('utf-8'))))
+        
+
+    def __create_conflient_consumer(self, id, message):
         '''
         https://github.com/confluentinc/confluent-kafka-python/blob/master/README.md
 
@@ -51,29 +55,17 @@ class TestPythonKafka(TestCase):
                     print(msg.error())
                     break
 
-            print('Received message: {}'.format(msg.value().decode('utf-8')))
+            # print('Received message: {}'.format(msg.value().decode('utf-8')))
+            message(id, msg)
 
         consumer.close()
 
+
     def test_consumer(self):
-        self.__create_consumer(1, lambda (id, message): print ("%d: %s:%d:%d: key=%s value=%s" % (
+        self.__create_consumer(1, lambda id, message: print("%d: %s:%d:%d: key=%s value=%s" % (
                                         id, message.topic, message.partition,
                                         message.offset, message.key,
                                         message.value)))
-        # To consume latest messages and auto-commit offsets
-        #from kafka import KafkaConsumer
-        #import msgpack
-
-        #consumer = KafkaConsumer('test-topic',
-        #                        group_id='test-group',
-        #                        bootstrap_servers=['localhost:9092'],
-        #                        api_version=(1, 0, 1))   # 必须加上api-version，这是因为一个BUG： https://github.com/dpkp/kafka-python/issues/1308
-        #for message in consumer:
-            # message value and key are raw bytes -- decode if necessary!
-            # e.g., for unicode: `message.value.decode('utf-8')`
-        #    print ("%s:%d:%d: key=%s value=%s" % (message.topic, message.partition,
-        #                                        message.offset, message.key,
-        #                                        message.value))
         print("End")
 
     def __create_consumer(self, id, message_processor):
