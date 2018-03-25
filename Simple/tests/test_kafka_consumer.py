@@ -21,7 +21,7 @@ $ /apps/kafka/default/bin/kafka-console-producer.sh \
     --topic test-topic
 '''
 
-class TestPythonKafka(TestCase):
+class TestKafkaConsumer(TestCase):
     def test_confluent_consumer(self):
         self.__create_conflient_consumer(1, lambda id, msg: print("Consumer %d: Received message: %s" % (id, msg.value().decode('utf-8'))))
         
@@ -61,14 +61,14 @@ class TestPythonKafka(TestCase):
         consumer.close()
 
 
-    def test_consumer(self):
-        self.__create_consumer(1, lambda id, message: print("%d: %s:%d:%d: key=%s value=%s" % (
+    def test_simple_consumer(self):
+        self.__create_simple_consumer(1, lambda id, message: print("%d: %s:%d:%d: key=%s value=%s" % (
                                         id, message.topic, message.partition,
                                         message.offset, message.key,
                                         message.value)))
         print("End")
 
-    def __create_consumer(self, id, message_processor):
+    def __create_simple_consumer(self, id, message_processor):
         '''
         https://github.com/dpkp/kafka-python
 
