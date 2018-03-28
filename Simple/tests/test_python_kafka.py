@@ -28,7 +28,7 @@ class TestPythonKafka(TestCase):
         consumer = KafkaConsumer('test-topic',
                                 group_id='test-group',
                                 bootstrap_servers=['localhost:9092'],
-                                api_version=(0, 10, 1))   # 必须加上api-version，这是因为一个BUG： https://github.com/dpkp/kafka-python/issues/1308
+                                api_version=(1, 0, 1))   # 必须加上api-version，这是因为一个BUG： https://github.com/dpkp/kafka-python/issues/1308
         for message in consumer:
             # message value and key are raw bytes -- decode if necessary!
             # e.g., for unicode: `message.value.decode('utf-8')`
