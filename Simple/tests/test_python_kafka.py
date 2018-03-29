@@ -24,16 +24,19 @@ $ /apps/kafka/default/bin/kafka-console-producer.sh \
 class TestPythonKafka(TestCase):
     def test_confluent_consumer(self):
         '''
+        https://github.com/confluentinc/confluent-kafka-python/blob/master/README.md
+
         # yum install librdkafka-devel
         # pip install confluent_kafka
         '''
         from confluent_kafka import Consumer, KafkaError
 
+        # consume earliest available messages, don't commit offsets
         consumer = Consumer({
             'bootstrap.servers': 'localhost:9092',
             'group.id': 'test-group',
             'default.topic.config': {
-                'auto.offset.reset': 'smallest'
+                'auto.offset.reset': 'earliest'
             }
         })
         consumer.subscribe(['test-topic'])
@@ -52,15 +55,37 @@ class TestPythonKafka(TestCase):
 
         consumer.close()
 
-
     def test_consumer(self):
+        self.__create_consumer(1, lambda (id, message): print ("%d: %s:%d:%d: key=%s value=%s" % (
+                                        id, message.topic, message.partition,
+                                        message.offset, message.key,
+                                        message.value)))
+        # To consume latest messages and auto-commit offsets
+        #from kafka import KafkaConsumer
+        #import msgpack
+
+        #consumer = KafkaConsumer('test-topic',
+        #                        group_id='test-group',
+        #                        bootstrap_servers=['localhost:9092'],
+        #                        api_version=(1, 0, 1))   # 必须加上api-version，这是因为一个BUG： https://github.com/dpkp/kafka-python/issues/1308
+        #for message in consumer:
+            # message value and key are raw bytes -- decode if necessary!
+            # e.g., for unicode: `message.value.decode('utf-8')`
+        #    print ("%s:%d:%d: key=%s value=%s" % (message.topic, message.partition,
+        #                                        message.offset, message.key,
+        #                                        message.value))
+        print("End")
+
+    def __create_consumer(self, id, message_processor):
         '''
+        https://github.com/dpkp/kafka-python
+
         # pip install kafka-python, msgpack-python
         '''
-        # To consume latest messages and auto-commit offsets
         from kafka import KafkaConsumer
         import msgpack
 
+        # To consume latest messages and auto-commit offsets
         consumer = KafkaConsumer('test-topic',
                                 group_id='test-group',
                                 bootstrap_servers=['localhost:9092'],
@@ -68,7 +93,4 @@ class TestPythonKafka(TestCase):
         for message in consumer:
             # message value and key are raw bytes -- decode if necessary!
             # e.g., for unicode: `message.value.decode('utf-8')`
-            print ("%s:%d:%d: key=%s value=%s" % (message.topic, message.partition,
-                                                message.offset, message.key,
-                                                message.value))
-        print("End")
+            message_processor(id, message)
